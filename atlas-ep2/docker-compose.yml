@@ -1,0 +1,62 @@
+# Despliegue local del MVP Atlas (ambiente QA en contenedores)
+#
+# API (por defecto):
+#   cp .env.example .env        # en Windows: copy .env.example .env
+#   docker compose up --build   # http://localhost:8080
+#
+# SonarQube local (opcional, igual que el proyecto base del curso):
+#   docker compose --profile sonar up -d   # http://localhost:9000 (admin / admin)
+#
+# Detener:  docker compose down        (agrega -v para borrar también la base de datos)
+services:
+  atlas-api:
+    build: .
+    image: atlas-api:1.0.0
+    container_name: atlas-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Las credenciales no están en el código: se leen del archivo .env
+      ATLAS_JWT_SECRET: ${ATLAS_JWT_SECRET:-}
+      ATLAS_ADMIN_PASSWORD: ${ATLAS_ADMIN_PASSWORD:-Admin#Atlas2026}
+      ATLAS_EDITOR_PASSWORD: ${ATLAS_EDITOR_PASSWORD:-Editor#Atlas2026}
+      ATLAS_DATOS_DEMO: ${ATLAS_DATOS_DEMO:-true}
+    volumes:
+      - atlas_data:/app/data   # la base SQLite se conserva al reiniciar el contenedor
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:community
+    platform: linux/amd64
+    container_name: sonarqube
+    profiles: ["sonar"]
+    depends_on:
+      - db
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  db:
+    image: postgres:15
+    container_name: sonarqube_db
+    profiles: ["sonar"]
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+
+volumes:
+  atlas_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgresql_data:

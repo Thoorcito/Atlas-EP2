@@ -1,0 +1,5 @@
+# Saltos de linea LF en todos los sistemas (evita fallas de Spotless en Windows)
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.jar binary

@@ -1,0 +1,11 @@
+# Raiz del repositorio (las reglas del aplicativo estan en atlas-ep2/.gitignore)
+.env
+target/
+*.log
+.idea/
+*.iml
+.vscode/
+.DS_Store
+.scannerwork/
+# Reportes pesados generados localmente
+evidencias/04-jmeter/dashboard/
